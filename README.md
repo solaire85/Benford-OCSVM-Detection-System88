@@ -21,7 +21,7 @@
 
 部署工具： PyInstaller / Launch4j
 
-5. 如何运行
+4. 如何运行
 
 环境依赖：
 
