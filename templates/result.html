@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析结果 - 论文数据真实性智能检测平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .status-cell.suspicious { color: #d32f2f; font-weight: bold; background-color: #ffebee; }
+        .status-cell.normal { color: #2e7d32; background-color: #e8f5e9; }
+        .data-column-tag { background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; }
+        .export-btn { background: #27ae60; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: background 0.3s; }
+        .export-btn:hover { background: #219150; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border-radius: 8px; width: 50%; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .row-range-badge { background: #f1f1f1; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+        /* 新增：解读面板样式 */
+        .interpretation-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8fbff;
+            border-radius: 12px;
+            border: 1px solid #d1e3f8;
+        }
+        .interpret-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 15px;
+        }
+        .interpret-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .interpret-item h4 {
+            margin-top: 0;
+            color: #1a3a5f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 8px;
+        }
+        .interpret-text {
+            font-size: 0.88rem;
+            color: #555;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+        .final-diagnosis {
+            margin-top: 25px;
+            padding: 18px;
+            background: #fff;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="header-image">
+            <img src="{{ url_for('static', filename='images/54005acc-ebf7-466b-bc0f-d24e82ced972.jpg') }}" alt="论文数据真实性分析">
+        </div>
+        <div class="header-content">
+            <h1 class="main-title">论文数据真实性检测报告</h1>
+            <p class="subtitle">基于 Benford-OCSVM 的统计分布偏离度分析</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <h2>检测摘要</h2>
+            <p>分析目标字段：<span class="data-column-tag">{{ data_column }}</span></p>
+        </div>
+        <div class="summary-section">
+            <table class="report-table">
+                {% for key, value in report.items() %}
+                <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
+                {% endfor %}
+            </table>
+            <div class="action-bar" style="margin-top: 25px; text-align: right;">
+                <form action="/export_report" method="post" style="display: inline-block;">
+                    <input type="hidden" name="results_json" value='{{ detailed_results | tojson }}'>
+                    <input type="hidden" name="file_name" value="{{ data_column }}">
+                    <button type="submit" class="export-btn">📥 下载异常定位 Excel (高亮标注)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <h2>分析图表</h2>
+            <p>数据分布特征与机器学习异常识别可视化</p>
+        </div>
+        <div class="visualization-section">
+            <img src="data:image/png;base64,{{ plot_url }}" alt="数据分析趋势图" class="analysis-chart">
+        </div>
+
+        <div class="interpretation-section">
+            <h3 style="color: #1a3a5f; border-left: 4px solid #3498db; padding-left: 15px; margin-bottom: 20px;">📊 报告深度解读 (Expert Interpretation)</h3>
+
+            <div class="interpret-grid">
+                <div class="interpret-item">
+                    <h4>📈 异常评分趋势图</h4>
+                    <div class="interpret-text">
+                        <strong>翻译：</strong>这张图反映了数据随顺序变化的“自然度”。
+                        <br>● 曲线波动越平缓，说明数据越符合统计惯性。
+                        <br>● 若出现红色散点，说明该段数据**打破了物理随机性**，具有明显的人为修饰痕迹。
+                    </div>
+                </div>
+
+                <div class="interpret-item">
+                    <h4>🏔️ 数据分布重叠分析</h4>
+                    <div class="interpret-text">
+                        <strong>翻译：</strong>我们将您的数据（黄色）与学术基准（蓝色）进行重叠比对。
+                        <br>● 两座“山峰”重合度越高，数据真实度越高。
+                        <br>● 如果黄色峰严重偏离蓝色，说明数据在**底层规律**上已脱离该领域的自然范畴。
+                    </div>
+                </div>
+
+                <div class="interpret-item">
+                    <h4>📊 置信度分布直方图</h4>
+                    <div class="interpret-text">
+                        <strong>翻译：</strong>基于数字首位概率（本福特定律）的校验。
+                        <br>● 绿色条块越向右侧（接近 1.0）集中，数据越真实。
+                        <br>● 若左侧条块较多，意味着存在**“凑数”或“四舍五入”人工干预**的风险。
+                    </div>
+                </div>
+
+                <div class="interpret-item">
+                    <h4>🔥 特征相关性热力图</h4>
+                    <div class="interpret-text">
+                        <strong>翻译：</strong>检测各项统计指标之间的逻辑关联性。
+                        <br>● 颜色越深，代表数据内部逻辑越自洽。
+                        <br>● 若图块颜色杂乱偏浅，通常代表数据包含大量**随机生成的噪声**或填报质量极差。
+                    </div>
+                </div>
+            </div>
+
+            <div class="final-diagnosis">
+                <strong style="font-size: 1.1rem; color: #1a3a5f;">💡 综合专家建议：</strong>
+                <p style="margin-top: 8px; color: #2c3e50; line-height: 1.5;">
+                    {{ report['核心判定结论'] }}
+                    <br><span style="color: #7f8c8d; font-size: 0.85rem;">(注：本分析基于 Benford-OCSVM 算法，检测结果仅供学术核查参考。)</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header"><h2>窗口详细指标 (前 100 条)</h2><p>各滑动窗口下的统计量与定位映射</p></div>
+        <div class="detailed-results">
+            <div style="overflow-x: auto;">
+                <table class="results-table">
+                    <thead>
+                    <tr>
+                        <th>索引</th>
+                        <th>影响行范围</th>
+                        <th>卡方 (Chi2)</th>
+                        <th>综合置信度</th>
+                        <th>异常得分</th>
+                        <th>判定状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for result in detailed_results[:100] %}
+                    <tr>
+                        <td>{{ loop.index0 }}</td>
+                        <td><span class="row-range-badge">L{{ result.start_row }} - L{{ result.end_row }}</span></td>
+                        <td>{{ "%.4f"|format(result.chi2) if result.chi2 is not none else "N/A" }}</td>
+                        <td style="font-weight: bold;">{{ "%.4f"|format(result.combined_conf) if result.combined_conf is not none else "N/A" }}</td>
+                        <td>{{ "%.4f"|format(result.OCSVM_Score) if result.OCSVM_Score is not none else "N/A" }}</td>
+                        <td class="status-cell {{ 'suspicious' if result.Is_Abnormal == 1 else 'normal' }}">
+                            {{ "疑似造假" if result.Is_Abnormal == 1 else "正常" }}
+                        </td>
+                        <td>
+                            {% if result.Is_Abnormal == 1 %}
+                            <button onclick="showDetails('{{ result.start_row }}', '{{ result.end_row }}', '{{ result.OCSVM_Score }}')" style="padding: 2px 8px; cursor: pointer;">🔍 详情</button>
+                            {% else %}-{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">异常段详细分析</h2>
+            <div style="margin-top: 20px; line-height: 1.6;">
+                <p>该数据段（原始文件第 <span id="target-rows" style="font-weight:bold;"></span> 行）存在显著分布偏离。</p>
+                <div style="background: #fff9db; padding: 15px; border-left: 4px solid #fcc419; margin-top: 15px;">
+                    <strong>溯源建议：</strong> 检查该区间是否存在人工录入错误。OCSVM 得分：<span id="target-score" style="color: #e74c3c;"></span>。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-section">
+        <div class="action-buttons">
+            <a href="/" class="action-btn primary">返回首页</a>
+            <button onclick="window.print()" class="action-btn secondary">打印报告</button>
+        </div>
+    </div>
+
+    <script>
+        function showDetails(start, end, score) {
+            document.getElementById("target-rows").innerText = start + " 至 " + end;
+            document.getElementById("target-score").innerText = parseFloat(score).toFixed(4);
+            document.getElementById("detailModal").style.display = "block";
+        }
+        function closeModal() { document.getElementById("detailModal").style.display = "none"; }
+        window.onclick = function(event) { if (event.target == document.getElementById("detailModal")) closeModal(); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'SimHei', Arial, sans-serif; padding: 30px; }
+        .header { text-align: center; border-bottom: 3px solid #3498db; margin-bottom: 20px; }
+        .title { color: #2c3e50; font-size: 28px; margin-bottom: 5px; }
+        .info-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .info-table th, .info-table td { border: 1px solid #bdc3c7; padding: 12px; text-align: left; }
+        .info-table th { background-color: #f8f9fa; color: #34495e; width: 30%; }
+        .chart-container { text-align: center; margin-top: 30px; }
+        .chart-img { width: 90%; border: 1px solid #eee; }
+        .footer { margin-top: 40px; font-size: 12px; color: #95a5a6; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
+        .watermark { position: fixed; top: 40%; left: 15%; font-size: 70px; color: rgba(200,200,200,0.15); transform: rotate(-35deg); z-index: -1; }
+    </style>
+</head>
+<body>
+    <div class="watermark">学术诚信检测专用</div>
+
+    <div class="header">
+        <h1 class="title">数据真实性智能检测分析报告</h1>
+        <p>报告生成时间：{{ timestamp }}</p>
+    </div>
+
+    <h3>一、检测结果摘要</h3>
+    <table class="info-table">
+        <tr><th>分析字段</th><td>{{ file_name }}</td></tr>
+        {% for key, value in summary.items() %}
+        <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h3>二、统计可视化图表</h3>
+    <div class="chart-container">
+        <img class="chart-img" src="data:image/png;base64,{{ plot_url }}">
+    </div>
+
+    <div class="footer">
+        本报告由 Benford-OCSVM 论文数据真实性检测平台自动生成
+    </div>
+</body>
+</html>

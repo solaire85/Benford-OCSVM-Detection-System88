@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学术规范 - 论文数据真实性检测系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .guide-container { display: flex; max-width: 1300px; margin: 60px auto; gap: 40px; }
+        .sidebar { width: 280px; background: #ffffff; padding: 25px; border-radius: 12px; height: fit-content; position: sticky; top: 100px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .sidebar h4 { color: #1a3a5f; border-left: 5px solid #3498db; padding-left: 15px; margin-bottom: 20px; font-size: 1.1rem; }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar li { margin: 12px 0; font-size: 14px; color: #555; cursor: pointer; transition: color 0.3s; display: flex; align-items: center; }
+        .sidebar li:hover { color: #3498db; }
+        .sidebar li::before { content: "◈"; margin-right: 8px; color: #3498db; font-size: 12px; }
+
+        .main-guide { flex: 1; background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        .content-header { border-bottom: 2px solid #f0f2f5; margin-bottom: 40px; padding-bottom: 20px; }
+        .content-header h1 { font-size: 2.2rem; color: #2c3e50; margin-bottom: 10px; }
+
+        .rule-card { margin-bottom: 50px; }
+        .rule-card h2 { color: #1a3a5f; font-size: 24px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .rule-badge { background: linear-gradient(135deg, #3498db, #2c3e50); color: white; padding: 3px 12px; border-radius: 4px; font-size: 14px; margin-right: 15px; vertical-align: middle; }
+
+        .rule-content { line-height: 2; color: #444; text-align: justify; font-size: 1.05rem; }
+        .rule-content b { color: #2c3e50; }
+        .sub-point { background: #f8fbff; border-radius: 8px; padding: 20px; margin: 15px 0; border-left: 4px solid #3498db; }
+
+        .disclaimer-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 25px; border-radius: 10px; margin-top: 50px; }
+        .disclaimer-box h5 { color: #c53030; font-size: 1.1rem; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="guide-container">
+        <aside class="sidebar">
+            <h4>规范目录</h4>
+            <ul>
+                <li>科研诚信定义</li>
+                <li>数据采集合规性</li>
+                <li>判定伪造的统计学依据</li>
+                <li>学术伦理审查标准</li>
+                <li>检测结果异议处理</li>
+            </ul>
+            <div style="margin-top: 40px; padding: 15px; background: #ebf8ff; border-radius: 8px; font-size: 13px;">
+                <strong>📚 参考文献：</strong><br>
+                《关于进一步弘扬科学家精神加强作风和学风建设的意见》
+            </div>
+        </aside>
+
+        <main class="main-guide">
+            <div class="content-header">
+                <h1>科研数据诚信与学术规范指南</h1>
+                <p>Scientific Research Integrity and Data Ethics Guidelines (v2026.1)</p>
+            </div>
+
+            <article class="rule-card">
+                <h2><span class="rule-badge">规范 01</span> 实验数据的真实性与完整性</h2>
+                <div class="rule-content">
+                    <p>真实性是学术研究的生命线。本平台所定义的<b>真实数据</b>必须来源于实验室直接观测、田野调查或受信任的第三方公共数据库。<b>严禁</b>通过以下手段修饰结果：</p>
+                    <div class="sub-point">
+                        1. <b>捏造 (Fabrication)</b>：完全脱离实验事实，手动录入或算法生成的模拟数据。<br>
+                        2. <b>篡改 (Falsification)</b>：选择性删除不利于实验结论的离群点，或人为“平滑”波动曲线。<br>
+                        3. <b>数据“美颜”</b>：为了符合特定论文逻辑，过度调整统计显著性（P-hacking）。
+                    </div>
+                </div>
+            </article>
+
+            <article class="rule-card">
+                <h2><span class="rule-badge">规范 02</span> 统计分布的客观规律性</h2>
+                <div class="rule-content">
+                    <p>根据<b>本福特定律 (Benford's Law)</b>，自然产生的社会经济、物理、生物数据在首位数字分布上具有对数特性。当论文数据呈现异常均匀或特定规律集中时，系统将发出预警。学术规范要求研究者：</p>
+                    <ul>
+                        <li>保存原始未经清洗的原始文件（Raw Data）以备核查。</li>
+                        <li>在论文中详细描述采样过程与样本量分配逻辑。</li>
+                        <li>对数据处理中使用的任何插值算法、归一化手段进行显性标注。</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rule-card">
+                <h2><span class="rule-badge">规范 03</span> 异常检测结果的学术认定</h2>
+                <div class="rule-content">
+                    <p>系统标记为“疑似造假”并不直接等同于撤稿建议。<b>学术评估</b>应遵循以下流程：</p>
+                    <p>首先，对比 OCSVM 异常得分与滑动窗口的波动率；其次，核实异常段对应的原始实验记录是否存在操作误差。如果数据分布逻辑与该学科已知的统计指纹（Statistical Fingerprint）产生根本性背离，应由独立专家组进行复核。</p>
+                </div>
+            </article>
+
+            <div class="disclaimer-box">
+                <h5>️ 特别申明与法律边界</h5>
+                <p>本平台检测结果基于概率统计模型（Benford-OCSVM），分析报告仅供科研诚信参考，不具法律强制判定效力。对于涉及学术不端的判定，应由相关学术委员会、期刊编辑部结合原始实验记录及实验室环境参数进行最终认定。使用者应在合规框架内使用本系统。</p>
+            </div>
+
+            <div style="margin-top: 50px; text-align: center;">
+                <a href="/" class="action-btn primary" style="padding: 15px 60px; text-decoration: none; border-radius: 50px;">返回检测系统</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

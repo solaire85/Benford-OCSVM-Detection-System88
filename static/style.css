@@ -1,0 +1,329 @@
+/* ==========================================
+   1. 基础重置与学术感字体定义
+   ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #1a3a5f;    /* 深科研蓝 */
+    --accent-color: #2980b9;     /* 亮学术蓝 */
+    --success-color: #27ae60;    /* 统计正常绿色 */
+    --error-color: #c0392b;      /* 异常警告红色 */
+    --bg-light: #f4f7f6;         /* 浅灰蓝背景 */
+    --text-main: #2c3e50;
+    --text-muted: #7f8c8d;
+}
+
+body {
+    font-family: 'Segoe UI', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--bg-light);
+}
+
+/* ==========================================
+   2. 导航栏 (学术机构风格)
+   ========================================== */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 0 40px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 70px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-icon {
+    height: 40px;
+    width: auto;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-link {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 15px;
+    border-radius: 4px;
+    transition: 0.3s;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--accent-color);
+    background: rgba(41, 128, 185, 0.1);
+}
+
+/* ==========================================
+   3. 轮播图与头部展示
+   ========================================== */
+.swiper-container {
+    width: 100%;
+    height: 500px;
+    margin-top: 70px;
+    position: relative;
+    background: #000;
+}
+
+.swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7; /* 压暗图片以突出文字 */
+}
+
+.slide-content {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    transform: translateY(-50%);
+    color: white;
+    max-width: 600px;
+    z-index: 5;
+}
+
+.slide-content h2 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    border-left: 5px solid var(--accent-color);
+    padding-left: 20px;
+}
+
+.slide-content p {
+    font-size: 1.2rem;
+    background: rgba(0,0,0,0.3);
+    padding: 10px 20px;
+    display: inline-block;
+}
+
+/* ==========================================
+   4. 分析结果页面专用样式 (Z型布局支持)
+   ========================================== */
+.header-section {
+    height: 250px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 70px;
+    color: white;
+    text-align: center;
+}
+
+.content-section {
+    max-width: 1100px;
+    margin: 40px auto; /* 恢复正常的上下 40px 间距 */
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    position: relative; /* 确保层级正确 */
+    z-index: 10;
+}
+
+.section-header {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.data-column-tag {
+    background: #e1f5fe;
+    color: #0288d1;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* 报表与摘要 */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th {
+    background: #f8f9fa;
+    width: 250px;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 18px;
+    border: 1px solid #edf2f7;
+    text-align: left;
+}
+
+.report-table td {
+    padding: 18px;
+    border: 1px solid #edf2f7;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* 分析图表容器 */
+.visualization-section {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.analysis-chart {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+}
+
+/* 详细结果数据表格 */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.results-table th {
+    background: var(--primary-color);
+    color: white;
+    padding: 12px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.results-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    font-family: 'Consolas', monospace; /* 数字使用等宽字体更整齐 */
+}
+
+.status-cell {
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.status-cell.normal { color: var(--success-color); background: #e8f5e9; }
+.status-cell.suspicious { color: var(--error-color); background: #fdeaea; }
+
+/* ==========================================
+   5. 功能卡片与交互
+   ========================================== */
+.cards-section {
+    background: #fff;
+    padding: 80px 0;
+}
+
+.cards-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.feature-card {
+    padding: 40px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    transition: 0.4s;
+    text-align: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border-color: var(--accent-color);
+}
+
+.card-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+/* ==========================================
+   6. 按钮与表单控件
+   ========================================== */
+.submit-btn {
+    background: var(--primary-color);
+    color: white;
+    padding: 16px 50px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    background: var(--accent-color);
+    box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4);
+}
+
+.radio-label {
+    display: flex;
+    padding: 20px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: 0.2s;
+}
+
+.radio-label:has(input:checked) {
+    border-color: var(--accent-color);
+    background: rgba(41, 128, 185, 0.05);
+}
+
+/* ==========================================
+   7. 打印适配 (科研报告标准)
+   ========================================== */
+@media print {
+    .navbar, .swiper-container, .action-section, .info-section { display: none !important; }
+    .content-section { margin: 0; box-shadow: none; width: 100%; }
+    body { background: white; }
+    .results-table th { background: #333 !important; color: white !important; }
+}
+
+/* ==========================================
+   8. 响应式布局
+   ========================================== */
+@media (max-width: 768px) {
+    .cards-container { grid-template-columns: 1fr; }
+    .slide-content h2 { font-size: 1.8rem; }
+    .navbar { padding: 0 15px; }
+}

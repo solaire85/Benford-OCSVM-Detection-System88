@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>算法原理 - 论文数据真实性检测平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --dark-slate: #2d3748;
+            --tech-blue: #3182ce;
+            --math-bg: #f8fafc;
+        }
+
+        .algo-container { max-width: 1200px; margin: 60px auto; padding: 0 25px; line-height: 1.8; color: #4a5568; }
+
+        /* 标题装饰 */
+        .algo-header { text-align: center; margin-bottom: 60px; }
+        .algo-header h1 { font-size: 2.8rem; color: var(--dark-slate); margin-bottom: 15px; }
+        .algo-header p { font-size: 1.2rem; color: #718096; }
+
+        /* 核心卡片样式 */
+        .tech-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-tag {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #ebf8ff;
+            color: var(--tech-blue);
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* 流程图模拟 */
+        .pipeline-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: #f1f5f9;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .node { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 18%; }
+        .arrow { font-size: 24px; color: #cbd5e0; }
+
+        /* 公式展示盒 */
+        .formula-card {
+            background: var(--math-bg);
+            border-left: 6px solid var(--tech-blue);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 10px 10px 0;
+            font-family: "Times New Roman", serif;
+        }
+
+        /* 重点文字高亮 */
+        .highlight { color: #2c5282; font-weight: 600; }
+
+        /* 响应式表格 */
+        .comparison-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .comparison-table th { background: #edf2f7; padding: 15px; text-align: left; }
+        .comparison-table td { padding: 15px; border-bottom: 1px solid #e2e8f0; }
+
+        /* 特征图标列表 */
+        .feature-list { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .feature-item { background: #fff; border: 1px solid #edf2f7; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="algo-container">
+        <header class="algo-header">
+            <span class="section-tag">核心技术白皮书</span>
+            <h1>Benford-OCSVM 联合检测架构</h1>
+            <p>融合统计学先验知识与非监督模式识别的科研数据校验体系</p>
+        </header>
+
+        <section class="tech-section">
+            <h2>一、 检测管线 (Detection Pipeline)</h2>
+            <p>系统遵循从“原始信号”到“异常评分”的转化路径。针对论文中提到的非平稳时间序列（如COVID-19确诊数）或静态截面数据（如GDP），算法流程如下：</p>
+            <div class="pipeline-diagram">
+                <div class="node"><h4>数据预处理</h4><p style="font-size: 12px;">归一化与清洗</p></div>
+                <div class="arrow">➜</div>
+                <div class="node"><h4>滑动窗口切片</h4><p style="font-size: 12px;">动态步长采样</p></div>
+                <div class="arrow">➜</div>
+                <div class="node"><h4>特征提取</h4><p style="font-size: 12px;">提取本福特指纹</p></div>
+                <div class="arrow">➜</div>
+                <div class="node"><h4>OCSVM 映射</h4><p style="font-size: 12px;">高维超平面决策</p></div>
+                <div class="arrow">➜</div>
+                <div class="node"><h4>结果评估</h4><p style="font-size: 12px;">生成检测报告</p></div>
+            </div>
+
+        </section>
+
+        <section class="tech-section">
+            <span class="section-tag">统计学基础</span>
+            <h2>二、 基于本福特定律的特征工程</h2>
+            <p>论文研究表明，自然生成的非人工干预数据在首位数字分布上具有显著的对数特性。我们不仅提取首位频率，还构建了多维统计特征空间：</p>
+
+            <div class="formula-card">
+                <p><b>首位数字分布定律：</b></p>
+                $$P(d) = \log_{10}(1 + \frac{1}{d}), \quad d \in \{1, 2, \dots, 9\}$$
+            </div>
+
+            <p>为了捕捉数据中细微的“美化”或“构造”痕迹，系统提取以下 <span class="highlight">8 维核心特征指纹</span>：</p>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <strong>1. 卡方统计量 (\(\chi^2\))：</strong> 衡量观测分布与理论分布的整体偏离度。
+                    $$\chi^2 = \sum_{d=1}^{9} \frac{(O_d - E_d)^2}{E_d}$$
+                </div>
+                <div class="feature-item">
+                    <strong>2. 平均绝对偏差 (MAD)：</strong> 对小样本数据具有更强的鲁棒性，是判别真实性的关键指标。
+                </div>
+                <div class="feature-item">
+                    <strong>3. 皮尔逊相关系数 (\(\rho\))：</strong> 评估数据分布形态与标准本福特曲线的线性一致性。
+                </div>
+                <div class="feature-item">
+                    <strong>4. 变异系数与欧氏距离：</strong> 捕捉高频数字不自然的集中现象。
+                </div>
+            </div>
+        </section>
+
+        <section class="tech-section">
+            <span class="section-tag">机器学习引擎</span>
+            <h2>三、 单类支持向量机 (One-Class SVM)</h2>
+            <p>针对“学术造假案例”中异常样本极度匮乏且类型未知的特性，本系统摒弃了传统的监督学习，采用<b>无监督异常检测</b>。通过 OCSVM，系统在特征空间中构建一个包裹“正常数据”的决策超平面。</p>
+
+            <div class="formula-card">
+                <p><b>最优化目标函数：</b></p>
+                $$\min_{w, \xi, \rho} \frac{1}{2} \|w\|^2 + \frac{1}{\nu n} \sum_{i=1}^{n} \xi_i - \rho$$
+                <p style="margin-top: 15px;"><b>约束条件：</b> \((w \cdot \Phi(x_i)) \geq \rho - \xi_i, \quad \xi_i \geq 0\)</p>
+            </div>
+
+            <p>通过 <span class="highlight">RBF 核函数</span>，算法将 8 维统计特征映射到无限维希尔伯特空间。论文中提到的“异常评分”即为数据点距离该决策边界的带符号距离。负值越大，说明数据偏离自然规律的程度越高。</p>
+
+        </section>
+
+        <section class="tech-section">
+            <h2>四、 模型超参数与实证配置</h2>
+            <p>根据论文对 GDP 数据及金融欺诈数据的实验结果，系统预设了针对不同场景的优化参数：</p>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>参数项</th>
+                        <th>推荐值</th>
+                        <th>学术依据 (依据论文实验)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>滑动窗口 (Window Size)</td>
+                        <td>30 - 50</td>
+                        <td>在稳定性与灵敏度之间取得平衡，适合 COVID-19 等变动剧烈的数据。</td>
+                    </tr>
+                    <tr>
+                        <td>核函数 (Kernel)</td>
+                        <td>RBF (径向基)</td>
+                        <td>能够处理非线性异常，捕捉人工构造数据中复杂的特征模式。</td>
+                    </tr>
+                    <tr>
+                        <td>Nu (\(\nu\))</td>
+                        <td>0.05 - 0.1</td>
+                        <td>定义了对“离群点”的容忍度。实证显示 0.05 能够有效控制误报率。</td>
+                    </tr>
+                    <tr>
+                        <td>Gamma (\(\gamma\))</td>
+                        <td>Auto / Scale</td>
+                        <td>决定了单个训练样本的影响范围，影响决策超平面的平滑度。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="tech-section" style="background: #fffaf0; border-color: #feebc8;">
+            <h3>💡 核心洞察：解决“特征坍缩”</h3>
+            <p style="font-size: 0.95rem;">
+                传统机器学习在跨领域（如用经济数据检测生物数据）时常因特征空间差异出现失效。
+                <b>本系统的核心创新</b>在于：利用本福特定律这一“宇宙通用”的统计规律作为桥梁，将不同领域的原始数据统一映射为标准化的 8 维特征向量，从而实现了卓越的泛化能力。
+            </p>
+        </section>
+
+        <div style="text-align: center; margin-top: 50px; padding-bottom: 50px;">
+            <a href="/" class="submit-btn" style="text-decoration:none; display:inline-block; width: 250px;">理解了，去检测</a>
+        </div>
+    </div>
+</body>
+</html>

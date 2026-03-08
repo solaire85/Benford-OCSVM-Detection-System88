@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史测试记录 —— 慧眼识"数"</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        .history-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .page-header {
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-chart-container {
+            height: 350px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #fcfdfe;
+            border: 1px solid #e1e8f0;
+            border-radius: 8px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        .history-table th {
+            background: #1a3a5f;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        .history-table td {
+            padding: 15px;
+            border-bottom: 1px solid #edf2f7;
+            color: #4a5568;
+        }
+        .history-table tr:hover {
+            background-color: #f7fafc;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .badge-danger { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+        .badge-success { background: #f0fff4; color: #2f855a; border: 1px solid #9ae6b4; }
+        .badge-info { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+
+        /* 新增：Nu参数专用标签 */
+        .badge-nu { background: #fffaf0; color: #b7791f; border: 1px solid #fbd38d; }
+
+        .back-link-wrapper {
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        .back-btn {
+            text-decoration: none;
+            color: #1a3a5f;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+        .back-btn:hover {
+            color: #3498db;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s;
+        }
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #a0aec0;
+        }
+
+        /* 参数组合样式 */
+        .param-snapshot {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">论文数据真实性检测平台</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">返回首页</a>
+                <a href="/history" class="nav-link active">测试记录</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="history-container">
+        <div class="page-header">
+            <div>
+                <div class="back-link-wrapper">
+                    <a href="/" class="back-btn">⬅ 返回分析界面</a>
+                </div>
+                <h1 style="margin-top: 10px; color: #2d3748;">历史测试档案库</h1>
+            </div>
+            <div style="text-align: right;">
+                <p style="color: #718096; font-size: 0.9rem;">累计检测次数</p>
+                <h2 style="color: #1a3a5f; margin: 0;">{{ records|length }}</h2>
+            </div>
+        </div>
+
+        <div class="stats-chart-container" id="historyChart"></div>
+
+        <div class="table-responsive">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>测试时间</th>
+                        <th>数据集名称</th>
+                        <th>基准模式</th>
+                        <th>参数快照 (Win/Nu)</th>
+                        <th>异常偏离率</th>
+                        <th>判定结论</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr id="row-{{ record[0] }}">
+                        <td>{{ record[1] }}</td>
+                        <td style="font-weight: 500;">{{ record[2] }}</td>
+                        <td><span class="badge badge-info">{{ record[3] }}</span></td>
+                        <td>
+                            <div class="param-snapshot">
+                                <span style="font-size: 11px;">窗口: <b>{{ record[4] }}</b></span>
+                                <span class="badge badge-nu" style="font-size: 10px; padding: 2px 5px;">Nu: {{ record[8] if record[8] else '0.05' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if record[5] > 0.1 %}badge-danger{% else %}badge-success{% endif %}">
+                                {{ "%.2f"|format(record[5] * 100) }}%
+                            </span>
+                        </td>
+                        <td style="font-size: 0.85rem;">{{ record[7] }}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteRecord({{ record[0] }})">删除</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-state">暂无测试记录，请先进行数据分析。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- 删除记录逻辑 ---
+        function deleteRecord(recordId) {
+            if (!confirm('确定要永久删除这条测试记录吗？')) return;
+
+            fetch('/delete_history/' + recordId, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('网络响应错误');
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('删除失败: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("删除出错:", err);
+                alert('网络错误：请检查后端服务是否正常运行。');
+            });
+        }
+
+        // --- 初始化对比图表 ---
+        const chartDom = document.getElementById('historyChart');
+        const myChart = echarts.init(chartDom);
+
+
+        const rawData = [
+            {% for record in records|reverse %}
+                {
+                    name: '{{ record[2] }}',
+                    rate: {{ record[5] }},
+                    conf: {{ record[6] }},
+                    nu: {{ record[8] if record[8] else 0.05 }}
+                },
+            {% endfor %}
+        ];
+
+        const option = {
+            title: { text: '历史测试参数波动对比', left: 'center' },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    let res = params[0].name + '<br/>';
+                    params.forEach(item => {
+                        res += item.marker + item.seriesName + ': ' + (item.value * 100).toFixed(2) + '%<br/>';
+                    });
+                    // 在提示框显示对应的 Nu 值
+                    const dataIndex = params[0].dataIndex;
+                    res += '📌 Nu 设定值: ' + rawData[dataIndex].nu;
+                    return res;
+                }
+            },
+            legend: { data: ['异常偏离率', '基准符合度'], bottom: 0 },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: rawData.map(item => item.name.substring(0, 10) + '...'),
+                axisLabel: { rotate: 30 }
+            },
+            yAxis: [
+                { type: 'value', name: '异常率', min: 0, max: 1 },
+                { type: 'value', name: '符合度', min: 0, max: 1, position: 'right' }
+            ],
+            series: [
+                {
+                    name: '异常偏离率',
+                    type: 'line',
+                    smooth: true,
+                    data: rawData.map(item => item.rate),
+                    itemStyle: { color: '#e74c3c' },
+                    areaStyle: { opacity: 0.1 }
+                },
+                {
+                    name: '基准符合度',
+                    type: 'bar',
+                    yAxisIndex: 1,
+                    data: rawData.map(item => item.conf),
+                    itemStyle: { color: '#3498db', opacity: 0.7 }
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
+    </script>
+</body>
+</html>

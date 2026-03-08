@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>慧眼识"数" —— 基于Benford-OCSVM的论文数据真实性检测平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <style>
+        /* 强制覆盖进度条样式，确保颜色可见 */
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #3498db !important;
+            background-image: linear-gradient(
+                45deg,
+                rgba(255,255,255,.15) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255,255,255,.15) 50%,
+                rgba(255,255,255,.15) 75%,
+                transparent 75%,
+                transparent
+            ) !important;
+            background-size: 40px 40px;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        /* 预检提醒容器样式 */
+        .check-notice {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        /* --- 智能搜索助手样式 --- */
+        .smart-search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+            z-index: 100;
+        }
+        .search-input-group {
+            display: flex;
+            background: white;
+            padding: 8px;
+            border-radius: 50px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+            border: 2px solid #3498db;
+        }
+        .search-input-group input {
+            flex: 1;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            outline: none;
+            font-size: 1rem;
+        }
+        .search-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .suggestion-panel {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: none;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+        }
+        .suggestion-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .suggestion-item:hover { background: #f0f7ff; }
+        .item-icon { font-size: 1.2rem; width: 25px; }
+        .item-info { display: flex; flex-direction: column; }
+        .item-title { font-weight: 500; color: #2c3e50; }
+        .item-type { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
+
+        /* --- 高级参数配置样式 --- */
+        .algo-config-section {
+            background: #ffffff;
+            border: 1px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 15px;
+        }
+        .config-item label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .config-item select, .config-item input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #d1d9e6;
+            outline: none;
+        }
+        .config-item p {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="{{ url_for('static', filename='images/南京农业大学.png') }}" alt="Logo" class="logo-icon">
+                <span class="logo-text">论文数据真实性检测平台</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/" class="nav-link active">首页</a>
+                <a href="/history" class="nav-link">历史对比</a>
+                <a href="/guidelines" class="nav-link">学术规范</a>
+                <a href="/algorithm" class="nav-link">算法原理</a>
+                <a href="/about" class="nav-link">关于我们</a>
+            </div>
+            <div class="nav-search" style="visibility: hidden;">
+                <button class="search-icon-btn"></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image1.jpg') }}" alt="论文数据分析">
+                <div class="slide-content">
+                    <h2>科研诚信 统计溯源</h2>
+                    <p>基于 Benford-OCSVM 算法的论文实验数据真实性验证</p>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image2.jpg') }}" alt="科研大数据">
+                <div class="slide-content">
+                    <h2>智能识别 逻辑校验</h2>
+                    <p>利用本福特法则深度挖掘数据分布背后的潜在规律</p>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <img src="{{ url_for('static', filename='images/image3.jpg') }}" alt="学术安全">
+                <div class="slide-content">
+                    <h2>学术护航 严谨科学</h2>
+                    <p>为科研成果提供统计学维度的客观真实性参考</p>
+                </div>
+            </div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+
+    <div class="smart-search-container">
+        <div class="search-input-group">
+            <input type="text" id="mainSearch" placeholder="搜索算法原理、学术规范或历史文件名...">
+            <button class="search-btn">搜索</button>
+        </div>
+        <div id="suggestionPanel" class="suggestion-panel"></div>
+    </div>
+
+    <div class="main-content" style="padding-top: 20px; padding-bottom: 60px;">
+        <div class="content-section">
+            <form id="analysis-form" class="data-source-form">
+                <div class="section-header">
+                    <h2>配置训练基准 (Baseline Configuration)</h2>
+                    <p style="color: #c0392b; font-weight: bold; margin-top: 10px;">专家提示：检测准确性高度依赖于基准数据的同源性</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="radio-label">
+                        <input type="radio" name="data_source" value="default" checked>
+                        <span class="radio-custom"></span>
+                        <div class="radio-content">
+                            <h3>使用行业标准统计预设 (Industry Presets)</h3>
+                            <p>请选择与待测数据领域最接近的真实预设基准：</p>
+                            <select name="preset_type" class="preset-select" style="margin-top: 12px; padding: 10px; border-radius: 4px; border: 1px solid #d1d9e6; width: 100%; background-color: #fcfdfe; color: #1a3a5f;">
+                                <option value="wdi_amount">WDI 全球发展指标 (金额/规模类数据)</option>
+                                <option value="gdp_growth">宏观经济 GDP 增长指标 (经济变动类数据)</option>
+                                <option value="covid_data">COVID-19 公共卫生统计 (流行病/观测类数据)</option>
+                            </select>
+                        </div>
+                    </label>
+
+                    <label class="radio-label">
+                        <input type="radio" name="data_source" value="custom">
+                        <span class="radio-custom"></span>
+                        <div class="radio-content">
+                            <h3>上传同领域自定义基准 (Expert Mode)</h3>
+                            <p><b>最推荐做法：</b>上传与待测论文同领域、同量级且已知真实的观测数据。</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="upload-section" style="background: #f8f9fa; padding: 30px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 40px;">
+                    <div class="upload-group" style="margin-bottom: 25px;">
+                        <label for="train_file" style="display: block; font-weight: 500; color: #2c3e50; margin-bottom: 8px;">基准数据上传 (仅自定义模式)</label>
+                        <input type="file" id="train_file" name="train_file" accept=".xlsx,.xls,.csv" style="width: 100%; padding: 12px; background: white;">
+                        <div id="train-check-notice" class="check-notice"></div>
+                    </div>
+                    <div class="upload-group">
+                        <label for="test_file" style="display: block; font-weight: 500; color: #2c3e50; margin-bottom: 8px;">待测论文数据上传（必选）</label>
+                        <input type="file" id="test_file" name="test_file" accept=".xlsx,.xls,.csv" required style="width: 100%; padding: 12px; background: white;">
+                        <div id="test-check-notice" class="check-notice"></div>
+                    </div>
+                </div>
+
+                <div class="algo-config-section">
+                    <h3 style="margin-top: 0; color: #1a3a5f; font-size: 1.1rem; border-bottom: 2px solid #f0f4f8; padding-bottom: 10px;">
+                        ⚙️ 算法高级参数 (Advanced Algorithm Parameters)
+                    </h3>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label for="window_size">滑动窗口大小 (Window Size)</label>
+                            <select id="window_size" name="window_size">
+                                <option value="20">20 (高灵敏度)</option>
+                                <option value="30">30</option>
+                                <option value="40" selected>40 (推荐/默认)</option>
+                                <option value="50">50 (高平滑度)</option>
+                            </select>
+                            <p>决定局部特征提取的精度。40 是针对科研观测数据的实证最优解。</p>
+                        </div>
+                        <div class="config-item">
+                            <label for="nu_param">异常比例因子 (Nu)</label>
+                            <input type="number" id="nu_param" name="nu_param" step="0.01" min="0.01" max="0.5" value="0.05">
+                            <p>控制决策边界松紧。0.05 表示允许约 5% 的数据偏离真实分布边界。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section" style="text-align: center;">
+                    <button type="submit" id="submit-btn" class="submit-btn">立即开始真实性分析</button>
+                    <div id="progress-container" style="display: none; margin-top: 30px; width: 80%; margin: 0 auto;">
+                        <div style="width: 100%; background: #e0e0e0; border-radius: 12px; height: 24px; overflow: hidden; border: 1px solid #ccc;">
+                            <div id="progress-bar"></div>
+                        </div>
+                        <p id="progress-status" style="margin-top: 12px; font-weight: bold; font-size: 1.1rem;">准备分析...</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Swiper 初始化 (保留您的逻辑) ---
+        var swiper = new Swiper('.swiper-container', {
+            loop: true,
+            autoplay: { delay: 6000, disableOnInteraction: false },
+            speed: 1000,
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        });
+
+        // --- 2. 智能搜索助手核心逻辑 ---
+        const mainSearch = document.getElementById('mainSearch');
+        const suggestionPanel = document.getElementById('suggestionPanel');
+        let allSuggestions = [];
+
+        fetch('/api/search_suggestions')
+            .then(res => res.json())
+            .then(data => { allSuggestions = data; })
+            .catch(() => {
+                allSuggestions = [
+                    {title: "本福特定律检测原理", type: "algo", url: "/algorithm"},
+                    {title: "OCSVM 异常评分机制", type: "algo", url: "/algorithm"},
+                    {title: "如何选择合适的 Nu 参数", type: "guide", url: "/guidelines"},
+                    {title: "学术诚信审查标准", type: "guide", url: "/guidelines"}
+                ];
+            });
+
+        mainSearch.addEventListener('input', function() {
+            const val = this.value.trim().toLowerCase();
+            suggestionPanel.innerHTML = '';
+            if (!val) { suggestionPanel.style.display = 'none'; return; }
+            const matches = allSuggestions.filter(item => item.title.toLowerCase().includes(val));
+            if (matches.length > 0) {
+                matches.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    const icon = item.type === 'history' ? '📄' : '📖';
+                    const typeLabel = item.type === 'history' ? '历史记录' : '学术百科';
+                    div.innerHTML = `<div class="item-icon">${icon}</div><div class="item-info"><span class="item-title">${item.title}</span><span class="item-type">${typeLabel}</span></div>`;
+                    div.onclick = () => window.location.href = item.url;
+                    suggestionPanel.appendChild(div);
+                });
+                suggestionPanel.style.display = 'block';
+            } else { suggestionPanel.style.display = 'none'; }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!mainSearch.contains(e.target)) suggestionPanel.style.display = 'none';
+        });
+
+        // --- 3. 数据预检与分析轮询 (保留您的逻辑) ---
+        function handleQuickCheck(inputElement, noticeElementId) {
+            inputElement.addEventListener('change', function() {
+                let file = this.files[0];
+                if (!file) return;
+                let noticeBox = document.getElementById(noticeElementId);
+                noticeBox.style.display = 'block';
+                noticeBox.innerHTML = '正在初筛扫描...';
+                let formData = new FormData();
+                formData.append('file', file);
+                fetch('/quick_check', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    noticeBox.innerHTML = `<strong>${data.status === 'success' ? '✅' : '⚠️'}</strong> ${data.message}`;
+                    noticeBox.style.backgroundColor = data.status === 'success' ? '#f0fff4' : '#fff5f5';
+                    noticeBox.style.color = data.status === 'success' ? '#2f855a' : '#c53030';
+                });
+            });
+        }
+        handleQuickCheck(document.getElementById('train_file'), 'train-check-notice');
+        handleQuickCheck(document.getElementById('test_file'), 'test-check-notice');
+
+        const form = document.getElementById('analysis-form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('progress-container').style.display = 'block';
+            const progressInterval = setInterval(() => {
+                fetch('/progress').then(res => res.json()).then(data => {
+                    document.getElementById('progress-bar').style.width = data.percent + '%';
+                    document.getElementById('progress-status').innerText = data.status;
+                });
+            }, 800);
+
+            const formData = new FormData(form);
+            fetch('/analyze', { method: 'POST', body: formData })
+            .then(res => res.text())
+            .then(html => {
+                clearInterval(progressInterval);
+                document.open(); document.write(html); document.close();
+            })
+            .catch(err => {
+                clearInterval(progressInterval);
+                alert("分析失败");
+                document.getElementById('submit-btn').disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>

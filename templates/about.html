@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>关于我们 - 论文数据真实性检测平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            --primary-navy: #1a3a5f;
+            --accent-blue: #3498db;
+            --bg-light: #f4f7f9;
+        }
+
+        .about-container { max-width: 1200px; margin: 60px auto; padding: 0 30px; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+
+        /* 顶部视觉区 */
+        .hero-banner {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #2c3e50 100%);
+            color: white;
+            padding: 80px 40px;
+            border-radius: 24px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner::after {
+            content: "Σ (O-E)² / E";
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 5rem;
+            opacity: 0.05;
+            font-family: serif;
+        }
+
+        /* 章节通用样式 */
+        .section-title {
+            font-size: 28px;
+            color: var(--primary-navy);
+            margin: 50px 0 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .section-title::before {
+            content: "";
+            width: 8px;
+            height: 32px;
+            background: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+        .intro-text { line-height: 2.1; color: #4a5568; font-size: 1.15rem; text-align: justify; text-indent: 2em; }
+
+        /* 核心优势卡片 */
+        .advantage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin: 40px 0; }
+        .adv-card {
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        .adv-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border-color: var(--accent-blue); }
+        .adv-card h3 { color: var(--accent-blue); margin-bottom: 15px; font-size: 1.3rem; }
+        .adv-card p { font-size: 0.95rem; color: #64748b; line-height: 1.7; }
+
+        /* 实证案例展示区 (论文核心) */
+        .case-study-box {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid #cbd5e1;
+        }
+        .case-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 25px; }
+        .case-item { background: white; padding: 20px; border-radius: 12px; text-align: center; border-top: 4px solid var(--accent-blue); }
+        .case-item h4 { margin-bottom: 10px; color: #334155; }
+        .case-tag { font-size: 12px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; }
+
+        /* 算法架构可视化描述 */
+        .algo-arch {
+            background: var(--primary-navy);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin: 40px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .arch-node { text-align: center; width: 200px; }
+        .arch-sep { font-size: 24px; color: #64748b; }
+
+        /* 时间轴 */
+        .timeline { margin: 40px 0 40px 20px; border-left: 2px dashed #cbd5e1; padding-left: 30px; }
+        .timeline-event { margin-bottom: 35px; position: relative; }
+        .timeline-event::before {
+            content: "";
+            position: absolute;
+            left: -41px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid var(--accent-blue);
+            border-radius: 50%;
+        }
+        .event-date { font-weight: bold; color: var(--primary-navy); font-size: 1.2rem; }
+
+        .footer { text-align: center; padding: 60px 0; border-top: 1px solid #e2e8f0; margin-top: 60px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="about-container">
+        <header class="hero-banner">
+            <h1 style="font-size: 3rem; margin-bottom: 20px;">慧眼识“数”：引领科研诚信新范式</h1>
+            <p style="font-size: 1.3rem; opacity: 0.9; max-width: 800px; margin: 0 auto; line-height: 1.6;">
+                融合本福特定律（Benford's Law）的统计先验知识与单类支持向量机（OCSVM）的非线性模式识别，构建鲁棒的数据真实性检测管线。
+            </p>
+        </header>
+
+        <section>
+            <div class="section-title">研究背景与使命</div>
+            <p class="intro-text">
+                在当前科研环境下，学术不端行为正变得日益隐蔽。从宏观经济核算（GDP）到公共卫生响应（COVID-19），数据的真实性直接关系到国家治理与学术公信力。传统的人工审查和单一统计检验方法在应对复杂的、非线性的“数据修饰”时表现出显著的局限性。本项目针对这一痛点，提出了一种<b>混合异常检测框架</b>，旨在为科研成果、审计报告及统计数据提供客观的、科学的真实性评价基准。
+            </p>
+        </section>
+
+        <section>
+            <div class="section-title">核心算法优势 (Innovation)</div>
+            <div class="advantage-grid">
+                <div class="adv-card">
+                    <h3>🛡️ 攻克小样本瓶颈</h3>
+                    <p>针对GDP等低频观测数据，传统统计检验效能不足。本系统通过滑动窗口提取8个维度的本福特特征指纹，在极小样本下依然能维持高识别率。</p>
+                </div>
+                <div class="adv-card">
+                    <h3>🧠 统计先验引导学习</h3>
+                    <p>不同于“黑盒”机器学习，我们将本福特分布作为专家知识注入OCSVM模型，有效防止了跨领域检测时的特征坍缩，显著提升了模型泛化能力。</p>
+                </div>
+                <div class="adv-card">
+                    <h3>🔍 跨域零样本检测</h3>
+                    <p>创新性提出“宏观学习-微观判定”范式，成功利用宏观经济统计规律识别微观金融交易中的欺诈行为，填补了无标签数据检测的空白。</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-title">系统检测管线 (Detection Pipeline)</div>
+            <div class="algo-arch">
+                <div class="arch-node">
+                    <div style="font-size: 40px;">📊</div>
+                    <h4>特征工程</h4>
+                    <p style="font-size: 12px;">提取MAD、卡方、相关系数等8维特征</p>
+                </div>
+                <div class="arch-sep">➜</div>
+                <div class="arch-node">
+                    <div style="font-size: 40px;">🧪</div>
+                    <h4>核空间映射</h4>
+                    <p style="font-size: 12px;">RBF核函数构建高维决策超平面</p>
+                </div>
+                <div class="arch-sep">➜</div>
+                <div class="arch-node">
+                    <div style="font-size: 40px;">⚖️</div>
+                    <h4>异常评分</h4>
+                    <p style="font-size: 12px;">基于决策距离生成真实性置信度</p>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="case-study-box">
+            <h2 style="text-align: center; color: var(--primary-navy);">论文实证研究案例</h2>
+            <div class="case-grid">
+                <div class="case-item">
+                    <span class="case-tag">宏观统计</span>
+                    <h4>GDP 增长率核算</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 10px;">通过本福特序列排名识别出特定年份的结构性统计异常，验证了算法在低频数据中的敏感性。</p>
+                </div>
+                <div class="case-item">
+                    <span class="case-tag">公共卫生</span>
+                    <h4>COVID-19 数据质量</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 10px;">利用滑动窗口技术捕捉疫情波动中的人为修饰痕迹，为公共政策提供数据质量保障。</p>
+                </div>
+                <div class="case-item">
+                    <span class="case-tag">金融审计</span>
+                    <h4>金融交易欺诈识别</h4>
+                    <p style="font-size: 13px; color: #666; margin-top: 10px;">在零标签场景下，正常组误报率仅 5.95%，而欺诈组异常评分呈现出显著的“断崖式”跌落。</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-title">项目迭代与展望</div>
+            <div class="timeline">
+                <div class="timeline-event">
+                    <span class="event-date">2026.02 - 现今</span>
+                    <p><b>v2.5 版本：</b>集成多行业 Baseline 指纹库，引入动态核适配（Kernel Adaptation）技术。</p>
+                </div>
+                <div class="timeline-event">
+                    <span class="event-date">2025.08</span>
+                    <p><b>理论突破：</b>完成 Benford-OCSVM 混合模型的数学证明，相关成果提交至学术评审。</p>
+                </div>
+                <div class="timeline-event">
+                    <span class="event-date">2024.12</span>
+                    <p><b>项目启动：</b>立项开发基于本福特定律的科研诚信初筛系统原型。</p>
+                </div>
+            </div>
+        </section>
+
+        <div style="text-align: center; margin-top: 80px;">
+            <a href="/" class="submit-btn" style="text-decoration: none; padding: 18px 60px; font-size: 1.2rem;">开启您的数据验证之旅</a>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2026 BD-System 论文数据真实性检测项目组 | 版权所有</p>
+            <p style="margin-top: 10px; font-size: 12px;">本项目受科研诚信专项计划资助 | 技术支撑：Python (Scikit-learn, NumPy) & Flask</p>
+        </footer>
+    </div>
+</body>
+</html>
